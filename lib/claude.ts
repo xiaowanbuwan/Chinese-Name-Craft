@@ -1,7 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NameRecommendation } from "@/types";
 
-const client = new Anthropic();
+const client = new Anthropic({
+  baseURL: process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com",
+});
 
 export async function generateNames(
   surname: string,
@@ -22,6 +24,8 @@ Requirements:
 - Provide the exact book name, chapter/poem title, and the original line the name is drawn from.
 - Avoid characters with awkward homophones when combined with the surname.
 - All fields must be bilingual (Chinese and English) as specified.
+
+CRITICAL: In all JSON string values, do NOT use any quotation marks (neither Chinese quotes "" nor English quotes ""). Use 《》for book titles and「」for emphasis instead.
 
 Return ONLY a JSON array of 5 objects with this exact structure (no markdown, no explanation):
 [
@@ -51,13 +55,28 @@ Return ONLY a JSON array of 5 objects with this exact structure (no markdown, no
   const text =
     response.content[0].type === "text" ? response.content[0].text : "";
 
+  console.log("Raw AI response:", text);
+
   // Extract JSON array from response
   const jsonMatch = text.match(/\[[\s\S]*\]/);
   if (!jsonMatch) {
     throw new Error("Failed to parse name recommendations from AI response.");
   }
 
-  const names: NameRecommendation[] = JSON.parse(jsonMatch[0]);
+  // Clean up common JSON issues from AI output
+  let jsonStr = jsonMatch[0];
+  jsonStr = jsonStr.replace(/,\s*([}\]])/g, "$1"); // trailing commas
+  jsonStr = jsonStr.replace(/(?<=:\s*"[^"]*)\u201c([^\u201d]*)\u201d/g, "\u300c$1\u300d"); // Chinese quotes inside values -> 「」
+  jsonStr = jsonStr.replace(/[\u201c\u201d]/g, '"'); // remaining smart double quotes
+  jsonStr = jsonStr.replace(/[\u2018\u2019]/g, "'"); // smart single quotes
+
+  let names: NameRecommendation[];
+  try {
+    names = JSON.parse(jsonStr);
+  } catch {
+    console.error("JSON parse failed, raw string:", jsonStr);
+    throw new Error("Failed to parse AI response as JSON.");
+  }
 
   if (!Array.isArray(names) || names.length === 0) {
     throw new Error("No name recommendations returned.");

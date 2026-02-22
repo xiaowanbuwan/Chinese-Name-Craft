@@ -46,8 +46,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ names });
   } catch (error) {
     console.error("Name generation error:", error);
+    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: "Failed to generate names. Please try again." },
+      { error: `Failed to generate names: ${message}` },
       { status: 500 }
     );
   }
