@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"/Users/qun/Documents/Claude code/0222测试\" && npx create-next-app@latest chinese-name-craft --typescript --tailwind --eslint --app --src=no --import-alias \"@/*\" --use-npm 2>&1)",
+      "Skill(claude-developer-platform)",
+      "Bash(cd \"/Users/qun/Documents/Claude code/0222测试\" && npm install 2>&1)",
+      "Bash(rm -rf ~/.npm/_cacache/content-v2/sha512/8a/0d 2>&1 && cd \"/Users/qun/Documents/Claude code/0222测试\" && npm install 2>&1)",
+      "Bash(cd \"/Users/qun/Documents/Claude code/0222测试\" && npm install --cache /tmp/npm-cache 2>&1、)",
+      "Bash(cd \"/Users/qun/Documents/Claude code/0222测试\" && npm run build 2>&1)"
+    ]
+  }
+}
